@@ -3,11 +3,8 @@ package org.firstinspires.ftc.teamcode
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
-import com.qualcomm.robotcore.hardware.DcMotor
-import com.qualcomm.robotcore.hardware.HardwareMap
-import com.qualcomm.robotcore.hardware.DcMotorSimple
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver
-import com.qualcomm.robotcore.hardware.GyroSensor
+import com.qualcomm.robotcore.hardware.*
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer
@@ -19,6 +16,8 @@ internal class MecanumDrive(hardwareMap: HardwareMap) {
     private val rearLeft: DcMotor = hardwareMap.get(DcMotor::class.java, "rear_left")
     private val rearRight: DcMotor = hardwareMap.get(DcMotor::class.java, "rear_left")
     private val lift: DcMotor = hardwareMap.get(DcMotor::class.java, "lift")
+    private val latch: Servo = hardwareMap.get(Servo::class.java, "latche_servo")
+    private val dump: Servo = hardwareMap.get(Servo::class.java, "dump_servo")
     // private val blinkinLedDriver: RevBlinkinLedDriver = hardwareMap.get(RevBlinkinLedDriver::class.java, "blinkin")
 
     init {
@@ -35,8 +34,16 @@ internal class MecanumDrive(hardwareMap: HardwareMap) {
         rearRight.power = y - z + x
     }
 
-    fun moveLift(power: Double) {
+    fun setLift(power: Double) {
         lift.power = power
+    }
+
+    fun setLatch(position: Double) {
+        latch.position = position
+    }
+
+    fun setDump(position: Double) {
+        latch.position = position
     }
 }
 
@@ -52,7 +59,7 @@ internal class MecanumTeleOp : LinearOpMode() {
             val y = gamepad1.left_stick_y.toDouble()
             val z = (-gamepad1.right_stick_x).toDouble()
             driver.drive(x, y, z)
-            driver.moveLift(gamepad2.left_stick_y.toDouble())
+            driver.setLift(gamepad2.left_stick_y.toDouble())
         }
     }
 }
@@ -88,12 +95,29 @@ internal class MecanumAutonomus : LinearOpMode() {
 
         waitForStart()
 
-        while (opModeIsActive()) {
-            driver.drive(0.0, 0.0, 0.0)
+        driver.setLift(1.0)
 
-            telemetry.addData("Gold Mineral Position", runRecognition())
-            telemetry.update()
-        }
+        sleep(1500)
+
+        driver.setLift(0.0)
+
+        driver.setLatch(0.0)
+
+        driver.drive(0.0, 0.5, 0.0)
+
+        sleep(2000)
+
+        driver.drive(0.0, 0.0, 0.0)
+
+        driver.setLift(-1.0)
+
+        driver.setDump(1.0)
+
+        sleep(1000)
+
+        driver.setLift(0.0)
+
+        driver.setLatch(0.0)
 
         tfod?.shutdown()
     }
