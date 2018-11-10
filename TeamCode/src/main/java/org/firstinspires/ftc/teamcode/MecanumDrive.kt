@@ -8,8 +8,6 @@ import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.Servo
 import com.qualcomm.robotcore.hardware.DcMotorSimple
 
-import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector
-
 internal class MecanumDrive(hardwareMap: HardwareMap) {
     private val frontLeft: DcMotor = hardwareMap.get(DcMotor::class.java, "front_left")
     private val frontRight: DcMotor = hardwareMap.get(DcMotor::class.java, "front_right")
@@ -59,7 +57,7 @@ internal class MecanumTeleOp : LinearOpMode() {
             val r = -gamepad1.right_stick_x.toDouble()
             driver.drive(x, y, r)
 
-            driver.setLift(gamepad2.left_stick_y.toDouble())
+            driver.setLift((gamepad2.left_trigger - gamepad2.right_trigger).toDouble())
 
             if (gamepad2.right_bumper && latchPosition < 1.0) {
                 latchPosition += 0.05
@@ -67,23 +65,26 @@ internal class MecanumTeleOp : LinearOpMode() {
                 latchPosition -= 0.05
             }
             driver.setLatch(latchPosition)
+
+            idle()
         }
     }
 }
 
-@Autonomous(name = "Mecanum Autonomous", group = "Autonomous")
-internal class MecanumAutonomus : LinearOpMode() {
+@Autonomous(name = "Auto Hang", group = "Autonomous")
+internal class MecanumAutonomusHang : LinearOpMode() {
     override fun runOpMode() {
         val driver = MecanumDrive(hardwareMap)
 
-        // runRecognition()
-        telemetry.update()
-
         waitForStart()
+
+        driver.drive(0.2, 0.0, 0.0)
 
         driver.setLift(1.0)
 
         sleep(1500)
+
+        driver.drive(0.0, 0.0, 0.0)
 
         driver.setLift(0.0)
 
@@ -99,12 +100,31 @@ internal class MecanumAutonomus : LinearOpMode() {
 
         driver.setLift(-1.0)
 
+        driver.drive(0.5, 0.0, 0.0)
+
         driver.setDump(1.0)
 
         sleep(1000)
 
+        driver.drive(0.0, 0.0, 0.0)
+
         driver.setLift(0.0)
 
         driver.setLatch(0.0)
+    }
+}
+
+@Autonomous(name = "Auto Crater", group = "Autonomous")
+internal class MecanumAutonomusCrater : LinearOpMode() {
+    override fun runOpMode() {
+        val driver = MecanumDrive(hardwareMap)
+
+        waitForStart()
+
+        driver.drive(-0.4, 0.0, 0.0)
+
+        sleep(4000)
+
+        driver.drive(0.0, 0.0, 0.0)
     }
 }
