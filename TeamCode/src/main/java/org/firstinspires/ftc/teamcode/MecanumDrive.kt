@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.Servo
 import com.qualcomm.robotcore.hardware.DcMotorSimple
 import org.firstinspires.ftc.robotcore.external.ClassFactory
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector
 
@@ -59,12 +60,14 @@ internal class MecanumTeleOp : LinearOpMode() {
     override fun runOpMode() {
         val driver = MecanumDrive(hardwareMap)
 
+        driver.setLatch(0.0)
+
         waitForStart()
 
         while (opModeIsActive()) {
             val x = -gamepad1.left_stick_y.toDouble()
             val y = gamepad1.left_stick_x.toDouble()
-            val r = -gamepad1.right_stick_x.toDouble()
+            val r = gamepad1.right_stick_x.toDouble()
             driver.drive(x, y, r)
 
             driver.setLift((gamepad2.right_trigger - gamepad2.left_trigger).toDouble())
@@ -108,7 +111,8 @@ internal class MecanumAutonomusHang : LinearOpMode() {
         run {
             val parameters = VuforiaLocalizer.Parameters()
             parameters.vuforiaLicenseKey = VUFORIA_KEY
-            parameters.cameraDirection = VuforiaLocalizer.CameraDirection.BACK
+            // parameters.cameraName = hardwareMap.get(WebcamName::class.java, "camera")
+            parameters.cameraDirection = VuforiaLocalizer.CameraDirection.FRONT
             val vuforia = ClassFactory.getInstance().createVuforia(parameters)
             val tfodMonitorViewId = hardwareMap.appContext.resources.getIdentifier(
                     "tfodMonitorViewId", "id", hardwareMap.appContext.packageName)
@@ -121,39 +125,60 @@ internal class MecanumAutonomusHang : LinearOpMode() {
 
         waitForStart()
 
-        driver.drive(0.2, 0.0, 0.0)
-
-        driver.setLift(1.0)
-
+        driver.setLift(-0.5)
         sleep(1500)
-
-        driver.drive(0.0, 0.0, 0.0)
-
         driver.setLift(0.0)
 
-        driver.setLatch(0.0)
-
-        sleep(4000)
-
-        driver.drive(-0.5, 0.0, 0.0)
-
+        driver.moveCollector(0.5)
         sleep(2000)
+        driver.moveCollector(0.0)
 
-        driver.drive(0.0, 0.0, 0.0)
-
-        driver.setLift(-1.0)
+        when (runRecognition()) {
+            "left" -> {
+                driver.drive(0.5, -0.5, 0.0)
+                sleep(1500)
+                driver.drive(0.0, 0.5, 0.0)
+                sleep(1500)
+                driver.drive(0.0, 0.0, 0.0)
+            }
+            "right" -> {
+                driver.drive(0.5, 0.5, 0.0)
+                sleep(1500)
+                driver.drive(0.0, -0.0, 0.0)
+                sleep(1500)
+                driver.drive(0.0, 0.0, 0.0)
+            }
+            "center" -> {
+                driver.drive(0.5, 0.0, 0.0)
+                sleep(1500)
+                driver.drive(0.0, 0.0, 0.0)
+            }
+            null -> {
+                driver.drive(0.5, 0.0, 0.0)
+                sleep(1500)
+                driver.drive(0.0, 0.0, 0.0)
+            }
+        }
 
         driver.drive(0.5, 0.0, 0.0)
-
-        // driver.setDump(1.0)
-
-        sleep(1000)
-
+        sleep(1500)
         driver.drive(0.0, 0.0, 0.0)
 
-        driver.setLift(0.0)
+        driver.setCollectorSpin(0.5)
+        sleep(1500)
+        driver.setCollectorSpin(0.0)
 
-        driver.setLatch(0.0)
+        driver.moveCollector(-1.0)
+        sleep(1500)
+        driver.moveCollector(0.0)
+
+        driver.drive(0.0, 0.0, 0.5)
+        sleep(800)
+        driver.drive(0.0, 0.0, 0.0)
+
+        driver.drive(0.5, 0.0, 0.0)
+        sleep(5000)
+        driver.drive(0.0, 0.0, 0.0)
 
         tfod!!.shutdown()
     }
