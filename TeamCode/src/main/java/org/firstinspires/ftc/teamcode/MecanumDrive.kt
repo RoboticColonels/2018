@@ -226,7 +226,6 @@ internal class MecanumAutonomusHang : LinearOpMode() {
             return "left"
         }
         return null
-        
     }
 
     private fun runRecognition(): String? {
@@ -236,12 +235,5 @@ internal class MecanumAutonomusHang : LinearOpMode() {
         }
         telemetry.addData("detection", lastDetection)
         return lastDetection
-        /*
-        return lastDetection
-            return current
-        } else {
-            return last
-        }
-        */
     }
 }
