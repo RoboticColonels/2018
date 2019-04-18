@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
+import com.qualcomm.robotcore.eventloop.opmode.Disabled
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.hardware.HardwareMap
 import com.qualcomm.robotcore.hardware.DcMotor
@@ -14,15 +15,15 @@ internal class MecanumDrive(hardwareMap: HardwareMap) {
     companion object {
         const val COUNTS_PER_ROTATION: Int = 657
     }
-    private val frontLeft: DcMotor = hardwareMap.get(DcMotor::class.java, "front_left")
-    private val frontRight: DcMotor = hardwareMap.get(DcMotor::class.java, "front_right")
-    private val rearLeft: DcMotor = hardwareMap.get(DcMotor::class.java, "rear_left")
-    private val rearRight: DcMotor = hardwareMap.get(DcMotor::class.java, "rear_right")
-    private val arm: DcMotor = hardwareMap.get(DcMotor::class.java, "arm")
+    private val frontLeft: DcMotor = hardwareMap.get(DcMotor::class.java, "leftFront")
+    private val frontRight: DcMotor = hardwareMap.get(DcMotor::class.java, "rightFront")
+    private val rearLeft: DcMotor = hardwareMap.get(DcMotor::class.java, "leftRear")
+    private val rearRight: DcMotor = hardwareMap.get(DcMotor::class.java, "rightRear")
+    private val arm: DcMotor = hardwareMap.get(DcMotor::class.java, "armRotate")
     private val lift: DcMotor = hardwareMap.get(DcMotor::class.java, "lift")
-    private val dump: DcMotor = hardwareMap.get(DcMotor::class.java, "dump")
-    private val collector: DcMotor = hardwareMap.get(DcMotor::class.java, "collect")
-    private val marker: Servo = hardwareMap.get(Servo::class.java, "marker")
+    private val dump: DcMotor = hardwareMap.get(DcMotor::class.java, "armExtend")
+    private val collector: DcMotor = hardwareMap.get(DcMotor::class.java, "collectorIntake")
+    // private val marker: Servo = hardwareMap.get(Servo::class.java, "marker")
 
     init {
         frontRight.direction = DcMotorSimple.Direction.REVERSE
@@ -84,11 +85,12 @@ internal class MecanumDrive(hardwareMap: HardwareMap) {
     }
 
     fun setMarkerPosition(position: Double) {
-        marker.position = position
+        // marker.position = position
     }
 }
 
 @Autonomous(name = "AutoCraterNative", group = "Autonomous")
+@Disabled
 internal class MecanumAutonomusHang : LinearOpMode() {
     companion object {
         private const val TFOD_MODEL_ASSET = "RoverRuckus.tflite"
@@ -117,42 +119,43 @@ internal class MecanumAutonomusHang : LinearOpMode() {
             tfod!!.activate()
         }
 
-        while (!opModeIsActive()) {
-            runRecognition()
-        }
         val mineralPosition = runRecognition()
         tfod!!.deactivate()
         tfod!!.shutdown()
 
+        waitForStart()
+
         // lower down
         driver.setLiftPower(-1.0)
-        sleep(1100)
+        sleep(4300)
         driver.setLiftPower(0.0)
 
         // unlatch
-        driver.driveMec(0.0, 0.5, 0.0)
+        driver.driveMec(0.0, -0.5, 0.0)
         sleep(200)
         driver.driveMec(0.0, 0.0, 0.0)
 
+        driver.setLiftPower(1.0)
         driver.setArmPower(1.0)
 
-//        // sample
-//        when (mineralPosition) {
-//            "left", null -> {
-//                driver.drive(0.3, 0.5, 0.5)
-//            }
-//            "right" -> {
-//                driver.drive(0.25, 0.5, 0.5)
-//            }
-//            "center" -> {
-//                driver.drive(0.65, 0.5, 0.5)
-//            }
-//        }
-//
-//        driver.setArmPower(0.0)
-//
-//        driver.drive(0.31, 0.5, 0.5)
-//        driver.drive(1.43, 0.5, -0.5)
+        // sample
+        when (mineralPosition) {
+            "left", null -> {
+                driver.drive(0.3, 0.5, 0.5)
+            }
+            "right" -> {
+                driver.drive(0.25, 0.5, 0.5)
+            }
+            "center" -> {
+                driver.drive(0.65, 0.5, 0.5)
+            }
+        }
+
+        driver.setLiftPower(0.0)
+        driver.setArmPower(0.0)
+
+        driver.drive(0.31, 0.5, 0.5)
+        driver.drive(1.43, 0.5, -0.5)
 
 //        val depotDrivePower = 0.7
 //        when (mineralPosition) {
